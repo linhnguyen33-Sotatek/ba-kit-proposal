@@ -107,7 +107,7 @@ SRS được hiểu ở đây là file để Dev/QC nhanh chóng nắm được 
 
 ## 2. BA Absorption Filter — Middleware xử lý AI (v2.1)
 
-### 2.1. Vấn đề & Đề xuất
+### 2.1. Hiện trạng & Đề xuất
 Thực tế cho thấy lệnh `/ba-impact` khi vừa absorb spec mới vừa quét ảnh hưởng chéo cùng lúc → AI sinh Use Case nông, chung chung, thậm chí miss requirement. Ngược lại, khi tách cho AI xử lý từng file riêng thì không bị miss.
 
 **→ Đề xuất:** Tách thành 2 lệnh riêng biệt để AI chuyên tâm làm tốt từng khâu.
@@ -127,7 +127,7 @@ Thực tế cho thấy lệnh `/ba-impact` khi vừa absorb spec mới vừa qu�
 | Business Rule logic | ✅ Ghi đúng + source | BA define được |
 | Sequence flow | ✅ Ghi đúng | BA define theo flow |
 
-> Không có source → ghi `—`. KHÔNG đính chú `[TBD]`. Tag `[BA-inferred]` CHỈ xuất hiện trong Change Manifest, KHÔNG ghi vào docs output.
+> Không có source → ghi `—`. KHÔNG đính chú `[TBD]`. Tag `[BA-inferred]` dùng để truy xuất, CHỈ xuất hiện trong Change Manifest, KHÔNG ghi vào docs output.
 
 **Lớp 3 — Change Manifest**
 Bản tổng hợp: (1) Đề xuất trực tiếp đã duyệt + (2) Ảnh hưởng lan truyền do `ba-impact` quét. BA duyệt TRƯỚC KHI AI apply.
@@ -159,7 +159,7 @@ flowchart TD
 ```
 
 **Giai đoạn 1: `/ba-absorb` — Phân tích cốt lõi**
-* **Step 0 — Scope Identification**: Đọc spec, lọc rác tech (Lớp 2), phân loại:
+* **Step 0 — Scope Identification**: Đọc spec, nhận diện yêu cầu tech/business (Lớp 2), phân loại:
   - UC mới cần tạo (`UC-NEW-01`, `UC-NEW-02`...)
   - UC hiện tại cần update (`UC-EXISTING-01: [lý do cần update]`)
   - UI rules / Common Rules cần sửa ở Backbone
@@ -198,7 +198,7 @@ flowchart TD
 
 ### 2.3. Tối ưu chuỗi đọc file cho `ba-impact` (Read Chain Optimization)
 
-**Vấn đề hiện tại:**
+**Quan sát hiện tại:**
 Lệnh `ba-impact` hiện đọc 7 file BA-kit cố định + toàn bộ file `intake` (chứa **tất cả raw requirements cũ + mới**) + backbone + hàng loạt downstream artifacts. File intake ghi lại toàn bộ lịch sử → phần lớn thông tin là nhiễu (noise), không liên quan đến yêu cầu đang xử lý. Đây là nguyên nhân chính khiến AI bị quá tải và miss requirement.
 
 **Nhận xét then chốt:** Khi đã tách luồng thành 2 giai đoạn, **Absorption Proposal** (output của Giai đoạn 1) đã chứa sẵn bản tóm tắt requirement mới đã được BA duyệt → `ba-impact` ở Giai đoạn 2 **không cần đọc lại file intake gốc** nữa. Nó chỉ cần nắm **current state** của hệ thống và **dependencies** giữa các feature.
@@ -222,9 +222,7 @@ Lệnh `ba-impact` hiện đọc 7 file BA-kit cố định + toàn bộ file `i
 
 ## 3. Quy trình áp dụng thực tế của BA khi Update Document
 
-**Vấn đề & Mục tiêu:**
-- **Vấn đề:** Trong dự án thực tế, có rất nhiều file tài liệu đang được viết sai lệch, không follow chuẩn template BA-kit đề ra.
-- **Mục tiêu:** Đảm bảo tính nhất quán (consistency) trên toàn hệ thống tài liệu và củng cố **tính làm chủ của BA** (hiểu rõ mình đang làm gì, tác động đến đâu) thay vì phụ thuộc hoàn toàn vào AI.
+**Mục tiêu:** Đảm bảo tính nhất quán (consistency) trên toàn hệ thống tài liệu và củng cố **tính làm chủ của BA** (hiểu rõ mình đang làm gì, tác động đến đâu) thay vì phụ thuộc hoàn toàn vào AI.
 
 Khi có requirement mới hoặc thay đổi, BA thực hiện tuần tự theo các bước sau để làm chủ tài liệu và luồng làm việc với AI:
 
@@ -281,4 +279,4 @@ Hai giá trị này nhằm phục vụ **2 mục tiêu chính**:
 - **Dành cho con người (BA/Team):** Giúp BA nắm chắc được scope và cấu trúc (structure) để dễ dàng kiểm soát, review và quản lý output tài liệu.
 - **Dành cho AI:** Giảm thiểu tối đa khả năng miss requirement và tình trạng bịa đặt thông tin (hallucination) do bị quá tải ngữ cảnh.
 
-*(Giải pháp đề xuất trên đây có thể vẫn chưa hoàn toàn tối ưu. Rất mong Manager xem xét, cân nhắc để tinh chỉnh và ứng dụng sao cho phù hợp nhất để giữ vững được 2 mục tiêu cốt lõi trên.)*
+*(Giải pháp đề xuất trên đây có thể còn nhiều thiếu sót. Rất mong Manager xem xét, cân nhắc để tinh chỉnh và ứng dụng sao cho phù hợp nhất để giữ vững được 2 mục tiêu cốt lõi trên.)*
