@@ -22,19 +22,21 @@ Kiểm tra ngẫu nhiên 2 line nghiệp vụ, cả 2 đều không giữ đư�
 
 ## 1. Tối ưu cấu trúc BA-kit (Template Optimization)
 
-### 1.1. Vấn đề tồn đọng
+### 1.1. Quan sát về cấu trúc BA-kit hiện tại (Observations)
 
-**FRD** bị "blend" nghiêm trọng nhất:
-- "Performance Requirements" trùng SRS §NFR. "Integration Points" lặp SRS §API.
-- "Business Rules" chép lại Backbone. "AC" lặp lại User Story.
-- "Workflows" không có scope note → vẽ trùng luồng với UC và SRS.
+Trong quá trình triển khai thực tế, team nhận thấy một số điểm giao thoa giữa các template, dẫn đến việc thông tin có xu hướng xuất hiện ở nhiều nơi:
 
-**SRS Spec:**
-- "Functional Requirements" bị AI hiểu thành liệt kê tính năng → lặp nguyên xi danh sách UC bên dưới.
-- "Business Rules" lại chép lại từ Backbone. "Data Constraints" dễ lặp với FRD "Data Requirements".
+**Sự giao thoa ở FRD:**
+- Mục "Performance Requirements" có nội dung tương đồng với NFR trong SRS. Tương tự, "Integration Points" có phần lặp với mục API của SRS.
+- "Business Rules" thường có xu hướng được chép lại từ Backbone, và "AC" lặp lại nội dung của User Story.
+- "Workflows" hiện chưa quy định rõ ranh giới (scope note) nên đôi khi bị vẽ trùng luồng với sơ đồ trong Use Case hoặc SRS.
 
-**Luồng nghiệp vụ bị vẽ ở 3 nơi:**
-Cùng 1 luồng xử lý nhưng xuất hiện ở FRD (Activity diagram), SRS (DFD), và UC (Sequence diagram). Không sai về kỹ thuật, nhưng vì **thiếu quy ước ranh giới**, AI và người viết dễ vẽ trùng lặp. Khi nghiệp vụ đổi, rủi ro 3 sơ đồ lệch nhau là rất cao.
+**Sự giao thoa ở SRS Spec:**
+- Mục "Functional Requirements" khi đưa cho AI phân tích thường bị hiểu thành liệt kê tính năng, dẫn đến việc lặp lại danh sách Use Case ở phần dưới.
+- "Business Rules" cũng dễ bị chép lại từ Backbone, trong khi "Data Constraints" dễ trùng lặp với mục Data Requirements của FRD.
+
+**Luồng nghiệp vụ xuất hiện ở nhiều tài liệu:**
+Cùng một luồng xử lý nhưng hiện tại có thể được mô tả ở FRD (Activity diagram), SRS (DFD), và UC (Sequence diagram). Điều này hoàn toàn không sai về mặt kỹ thuật, tuy nhiên nếu **chưa có quy ước ranh giới rõ ràng**, AI và BA dễ vẽ trùng lặp nội dung. Khi nghiệp vụ thay đổi, team sẽ tốn nhiều effort hơn để bảo trì và đồng bộ hóa cả 3 sơ đồ này.
 
 ### 1.2. Nguyên tắc thiết kế mới
 
