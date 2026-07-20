@@ -258,14 +258,14 @@ Thay vì tự làm thủ công hoặc khoán trắng 1 cục cho AI, BA tương 
 ## 4. Tài liệu tham khảo & Template đính kèm
 
 ### 4.1. Bộ BA Absorption Filter (Middleware Scripts)
-- **[`ba-absorption-filter.md`](.\02_BA_Absorption_Filter\ba-absorption-filter.md)**: Ruleset cốt lõi — ranh giới AI, chính sách lọc kỹ thuật, 7 bước phân tích luồng.
-- **[`absorb.md`](.\02_BA_Absorption_Filter\absorb.md)**: Workflow Giai đoạn 1 (`/ba-absorb`) — đọc spec, lọc tech, vẽ Sequence, sinh Edge Cases, xuất Proposal.
-- **[`change-manifest-template.md`](.\02_BA_Absorption_Filter\change-manifest-template.md)**: Template chuẩn cho báo cáo Change Manifest.
-- **[`seq-to-ec-template.md`](.\02_BA_Absorption_Filter\seq-to-ec-template.md)**: Template phân tích Break Points từ Sequence → bảng Edge Cases (`EC-{MOD}-{NNN}`).
+- **[`ba-absorption-filter.md`](..\02_BA_Absorption_Filter\ba-absorption-filter.md)**: Ruleset cốt lõi — ranh giới AI, chính sách lọc kỹ thuật, 7 bước phân tích luồng.
+- **[`absorb.md`](..\02_BA_Absorption_Filter\absorb.md)**: Workflow Giai đoạn 1 (`/ba-absorb`) — đọc spec, lọc tech, vẽ Sequence, sinh Edge Cases, xuất Proposal.
+- **[`change-manifest-template.md`](..\02_BA_Absorption_Filter\change-manifest-template.md)**: Template chuẩn cho báo cáo Change Manifest.
+- **[`seq-to-ec-template.md`](..\02_BA_Absorption_Filter\seq-to-ec-template.md)**: Template phân tích Break Points từ Sequence → bảng Edge Cases (`EC-{MOD}-{NNN}`).
 
 ### 4.2. Bộ BA-kit Templates (Đã tối ưu)
 - Các file template đã sửa đổi theo đề xuất Mục 1.3 (Backbone, FRD, UC, US, SRS Spec, SRS Compiled).
-- Vị trí: `.\01_BA_Kit_Templates_Moi\`
+- Vị trí: `..\01_BA_Kit_Templates_Moi\`
 
 ---
 
@@ -280,3 +280,4 @@ Hai giá trị này nhằm phục vụ **2 mục tiêu chính**:
 - **Dành cho AI:** Giảm thiểu tối đa khả năng miss requirement và tình trạng bịa đặt thông tin (hallucination) do bị quá tải ngữ cảnh.
 
 *(Giải pháp đề xuất trên đây có thể vẫn chưa hoàn toàn tối ưu. Rất mong Manager xem xét, cân nhắc để tinh chỉnh và ứng dụng sao cho phù hợp nhất để giữ vững được 2 mục tiêu cốt lõi trên.)*
+
