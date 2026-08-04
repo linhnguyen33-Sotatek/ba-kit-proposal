@@ -3,7 +3,7 @@
 > **Purpose**: Bộ quy tắc trung gian giữa AI và BA docs. AI PHẢI đọc file này trước khi absorb bất kỳ spec nào từ khách.
 > **Version**: 2.1.0
 > **Created**: 2026-07-17
-> **Owner**: @hien.duong
+> **Owner**: @linh.nguyen
 
 ---
 
@@ -45,8 +45,8 @@ Khi client spec **KHÔNG CÓ** → ghi `—` (dash). Dev tự define. KHÔNG b�
 | D1/Database table schema | ✅ Ghi đúng như spec | `—` (dev tự define) |
 | API endpoint path | ✅ Ghi đúng | `—` |
 | Column name + type | ✅ Ghi đúng | `—` |
-| Constraint / Index | ✅ Ghi đúng | `—` |
-| Error code (MSG-ERR-*) | ✅ Ghi đúng | `—` |
+| Constraint / Index | ✅ Ghi đúng | BA define được — ghi source trong changelog |
+| Error code (MSG-ERR-*) | ✅ Ghi đúng | BA define được — ghi source trong changelog |
 | HTTP status code | ✅ Ghi đúng | `—` |
 | Cron schedule / interval | ✅ Ghi đúng | `—` |
 | Business Rule logic (BR-*) | ✅ Ghi đúng + source tag | BA define được — ghi source trong changelog |
@@ -147,5 +147,5 @@ Sử dụng template chi tiết tại `~/.claude/ba-filter/seq-to-ec-template.md
 
 | Date | Author | Change |
 |---|---|---|
-| 2026-07-17 | @hien.duong + AI | v2.1 — Tách biệt rõ 2 giai đoạn ba-absorb và ba-impact |
-| 2026-07-17 | @hien.duong + AI | Initial version — 4 lớp kiểm soát |
+| 2026-07-17 | @linh.nguyen | v2.1 — Tách biệt rõ 2 giai đoạn ba-absorb và ba-impact |
+| 2026-07-17 | @linh.nguyen | Initial version — 4 lớp kiểm soát |
