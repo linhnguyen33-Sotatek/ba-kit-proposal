@@ -13,6 +13,7 @@ created: YYYY-MM-DD
 author: "@hien.duong"
 source: "[tên file spec / OQ-ID / BA instruction]"
 trigger: "[absorb | impact | manual]"
+baseline_sha: "[git commit SHA tại thời điểm manifest được tạo — dùng cho incremental audit]"
 ---
 
 # Change Manifest — [Source Name] → [Target Module(s)]
@@ -24,6 +25,7 @@ trigger: "[absorb | impact | manual]"
 | Date | YYYY-MM-DD HH:MM |
 | Source | [tên đầy đủ file spec / OQ resolution / BA instruction] |
 | Trigger | [absorb \| impact \| manual] |
+| Baseline SHA | [git commit SHA — `git rev-parse HEAD` tại lúc tạo manifest] |
 | Total files affected | N |
 | New UCs | UC-XXX, UC-YYY |
 | Updated UCs | UC-ZZZ |

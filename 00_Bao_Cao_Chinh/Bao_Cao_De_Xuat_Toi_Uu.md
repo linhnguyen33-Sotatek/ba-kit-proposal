@@ -2,6 +2,13 @@
 
 *Tài liệu dành cho Quản lý dự án / BA Lead nhằm định hướng tái cấu trúc hệ thống tài liệu và chuẩn hóa quy trình áp dụng AI.*
 
+## Changelog
+
+| Version | Ngày | Nội dung |
+|---|---|---|
+| v1 | 2026-07 | Báo cáo ban đầu — đề xuất tách `ba-absorb` thành lệnh riêng biệt song song với `ba-impact` |
+| v2 | 2026-08-05 | Sau khi nghiên cứu sâu BA-kit: xác định luồng hiện tại đã khá khép kín — tách lệnh tạo overhead không cần thiết. Tích hợp toàn bộ logic filter/absorption vào Phase 0 của `ba-impact`. Bổ sung `ba-start usecase` (add new), tăng cường `ba-start stories` và `ba-content-audit`. |
+
 ---
 
 ## 0. Bối cảnh
@@ -105,149 +112,192 @@ SRS được hiểu ở đây là file để Dev/QC nhanh chóng nắm được 
 
 ---
 
-## 2. BA Absorption Filter — Middleware xử lý AI (v2.1)
+## 2. Tối ưu Workflow — Full Flow & Suggestions
 
-### 2.1. Hiện trạng & Đề xuất
-Thực tế cho thấy lệnh `/ba-impact` khi vừa absorb spec mới vừa quét ảnh hưởng chéo cùng lúc → AI sinh Use Case nông, chung chung, thậm chí miss requirement. Ngược lại, khi tách cho AI xử lý từng file riêng thì không bị miss.
+### 2.1. Bối cảnh & Vấn đề
 
-**→ Đề xuất:** Tách thành 2 lệnh riêng biệt để AI chuyên tâm làm tốt từng khâu.
+Thực tế cho thấy lệnh `/ba-impact` khi vừa absorb spec mới vừa quét ảnh hưởng chéo cùng lúc → AI sinh Use Case nông, chung chung, thậm chí miss requirement. Ngược lại, khi tách cho AI xử lý từng phần riêng thì không bị miss.
 
-### 2.2. Cấu trúc 4 lớp Filter
+**Mục tiêu:** Human verify mọi output AI tạo ra. Tối ưu input để AI không tiếp thu thông tin thừa. Tối ưu output để BA verify kỹ càng.
 
-**Lớp 1 — Scope Boundary (Giới hạn AI)**
-- AI CHỈ cập nhật dựa trên: Client spec, BA define, OQ confirmed.
-- AI KHÔNG ĐƯỢC bịa DB schema / API / column type khi không có source.
-
-**Lớp 2 — Technical Content Policy**
-| Loại nội dung | Client spec CÓ | Client spec KHÔNG CÓ |
-|---|---|---|
-| D1/DB schema | ✅ Ghi đúng | `—` (dev tự define) |
-| API endpoint | ✅ Ghi đúng | `—` |
-| Column name + type | ✅ Ghi đúng | `—` |
-| Business Rule logic | ✅ Ghi đúng + source | BA define được |
-| Sequence flow | ✅ Ghi đúng | BA define theo flow |
-
-> Không có source → ghi `—`. KHÔNG đính chú `[TBD]`. Tag `[BA-inferred]` dùng để truy xuất, CHỈ xuất hiện trong Change Manifest, KHÔNG ghi vào docs output.
-
-**Lớp 3 — Change Manifest**
-Bản tổng hợp: (1) Đề xuất trực tiếp đã duyệt + (2) Ảnh hưởng lan truyền do `ba-impact` quét. BA duyệt TRƯỚC KHI AI apply.
-
-**Lớp 4 — Requirement Translation (7 bước)**
-Áp dụng cho **cả 2 trường hợp**: nhận requirement mới lẫn update/bổ sung requirement đã có. Luồng chạy giống nhau — chỉ khác ở Step 0 khi phân loại scope (tạo mới vs. cập nhật).
+### 2.2. Full Flow (Human-in-the-loop)
 
 ```mermaid
 flowchart TD
-    subgraph "Giai đoạn 1: ba-absorb"
-        A["Nhận requirement<br/>(mới hoặc update)"] --> B["Step 0: Lọc Tech & Xác định Scope"]
-        B --> C["Step 1: Vẽ Sequence Diagram (logic)"]
-        B --> D["Step 2: Review Spec + ASCII (UI/msg)"]
-        C --> E["Step 3: Break Points → Edge Cases"]
-        E --> F["Step 4: Xuất Absorption Proposal"]
-        D --> F
+    A["BA nhận input từ KH\n(file spec / change statement)"]
+    A --> B["/ba-impact --slug {slug} {input}"]
+
+    subgraph "Phase 0 — Pre-Processing (ba-impact mới)"
+        B --> B1["0.1 Technical Filter \n→ tách kỹ thuật ra [TECHNICAL-NOTE]"]
+        B1 --> B2["0.2 Feature Count\n→ phân loại các user story & use case cần update \n→ BA confirm danh sách"]
+        B2 --> B3["0.3 Input Clarity Check \n→ hỏi BA phần thiếu: \n Actor / UI Coverage / Business Rules"]
+        B3 --> B4["0.4 Contradiction Check\n→ so với backbone/FRD \n → cùng BA resolve nếu có mâu thuẫn"]
+        B4 --> B5["0.5 Change Manifest + Feature Plan \n → BA review & approve"]
     end
-    
-    F --> G{"BA Review Proposal"}
-    
-    subgraph "Giai đoạn 2: ba-impact"
-        G -->|Approved| H["Step 5: Impact Scan (Quét ảnh hưởng chéo)"]
-        H --> I["Step 6: Cascade (UC bị ảnh hưởng gián tiếp)"]
-        I --> J["Step 7: Compile Change Manifest"]
+
+    B5 -->|BA approve| C["Agent chia task update \n backbone + FRD lần lượt \n "]
+
+    subgraph "Per Feature (lần lượt)"
+        C --> D["ba-start stories \n → draft US → BA confirm → write"]
+        D --> E["ba-start usecase\n → validate → draft seq+EC → BA confirm → write+self-validate"]
+        E --> F{"Còn feature?"}
+        F -->|Y| D
+        F -->|N| G["ba-content-audit --manifest \n → incremental audit + full audit"]
     end
-    
-    J --> K{"BA Review Manifest"}
-    K -->|Approved| L["Apply changes"]
 ```
 
-**Giai đoạn 1: `/ba-absorb` — Phân tích cốt lõi**
-* **Step 0 — Scope Identification**: Đọc spec, nhận diện yêu cầu tech/business (Lớp 2), phân loại:
-  - UC mới cần tạo (`UC-NEW-01`, `UC-NEW-02`...)
-  - UC hiện tại cần update (`UC-EXISTING-01: [lý do cần update]`)
-  - UI rules / Common Rules cần sửa ở Backbone
-* **Step 1 — Sequence Diagram** (nếu đổi logic):
-  ```mermaid
-  sequenceDiagram
-      actor User
-      participant FE as Frontend
-      participant BE as Backend API
-      participant DB as Database
-      User->>FE: Click [Create IB Partner]
-      FE->>BE: POST /api/ops/ib/partners
-      BE->>DB: INSERT ib_partners
-      DB-->>BE: OK / Error
-      BE-->>FE: 201 Created / 4xx Error
-      FE-->>User: Success toast / Error message
-  ```
-* **Step 2 — Review spec + ASCII** (nếu đổi UI/msg).
-* **Step 3 — Break Points → Edge Cases**:
-  | Interaction Line | Break Point | Root Cause | Error Message |
-  |---|---|---|---|
-  | FE → BE: POST | Timeout | Network | "Request timed out" |
-  | BE → DB: INSERT | Duplicate key | Unique constraint | "Code already exists" |
+### 2.3. Chi tiết từng bước
 
-  Nhóm break point cùng root cause → Edge Case chuẩn:
-  | EC-ID | Name | Flow | User Sees | System Does | Recovery |
-  |---|---|---|---|---|---|
-  | EC-ADM-001 | Network Timeout | UC-IB-CREATE | Toast: "Request timed out" | Log event | User retry |
-  | EC-ADM-003 | Duplicate IB Code | UC-IB-CREATE | Toast: "Code already exists" | Return 409 | User change code |
-* **Step 4 — Xuất Absorption Proposal** (Scope + Seq + EC) cho BA duyệt.
+#### Bước 1 — BA import requirement
 
-**Giai đoạn 2: `/ba-impact` — Quét lan truyền**
-* **Step 5 — Impact Scan**: Quét cross-function dependencies và shared rules bị ảnh hưởng.
-* **Step 6 — Cascade**: Lặp lại phân tích cho các UC bị ảnh hưởng gián tiếp.
-* **Step 7 — Compile Change Manifest**: Tổng hợp (Trực tiếp + Gián tiếp) → BA review lần cuối → Apply.
-
-### 2.3. Tối ưu chuỗi đọc file cho `ba-impact` (Read Chain Optimization)
-
-**Quan sát hiện tại:**
-Lệnh `ba-impact` hiện đọc 7 file BA-kit cố định + toàn bộ file `intake` (chứa **tất cả raw requirements cũ + mới**) + backbone + hàng loạt downstream artifacts. File intake ghi lại toàn bộ lịch sử → phần lớn thông tin là nhiễu (noise), không liên quan đến yêu cầu đang xử lý. Đây là nguyên nhân chính khiến AI bị quá tải và miss requirement.
-
-**Nhận xét then chốt:** Khi đã tách luồng thành 2 giai đoạn, **Absorption Proposal** (output của Giai đoạn 1) đã chứa sẵn bản tóm tắt requirement mới đã được BA duyệt → `ba-impact` ở Giai đoạn 2 **không cần đọc lại file intake gốc** nữa. Nó chỉ cần nắm **current state** của hệ thống và **dependencies** giữa các feature.
-
-**Đề xuất chuỗi đọc mới cho Giai đoạn 2 (`ba-impact`):**
-
-| Mức | File | Lý do |
-|---|---|---|
-| **Must read** | **Absorption Proposal** (đã duyệt) | Đây là input chính — đã lọc, đã có scope, Seq, EC. Thay thế hoàn toàn vai trò đọc intake/spec gốc. |
-| **Must read** | **Backbone** (Feature Map + Module List) | Nắm current state: những feature nào đang có, thuộc module nào. |
-| **Must read** | **Common Rules** (từ Backbone hoặc SRS) | Nắm dependencies giữa các feature — rule nào apply cho ≥ 2 features → biết ngay đụng rule nào là ảnh hưởng chéo. |
-| **Conditional** | **UC files** được Proposal chỉ đích danh | Chỉ đọc các UC trực tiếp bị ảnh hưởng để tìm cross-function dependencies (`## Cross-Function Impact`). |
-| **Conditional** | **ASCII screen files** cho UC bị đổi UI | Chỉ khi Proposal flag có thay đổi UI. |
-| **Skip** | **Intake** (full history) | Proposal đã thay thế. Intake chỉ cần được **ghi thêm** (append) sau khi hoàn tất — không cần đọc. |
-| **Skip** | Toàn bộ downstream artifacts khác | Trừ khi cross-function scan phát hiện thêm UC bị ảnh hưởng gián tiếp. |
-
-**Kết quả kỳ vọng:**
-- `ba-impact` chỉ tập trung đúng nhiệm vụ: tìm ảnh hưởng chéo dựa trên current state, không phải đọc hiểu lại toàn bộ lịch sử requirement.
+BA đưa file spec của KH vào thư mục project. Chạy lệnh:
+```
+/ba-impact --slug {slug} {đường dẫn file hoặc change statement}
+```
 
 ---
 
-## 3. Quy trình áp dụng thực tế của BA khi Update Document
+#### Bước 2 — Phase 0: Pre-Processing (`ba-impact` ver update)
 
-**Mục tiêu:** Đảm bảo tính nhất quán (consistency) trên toàn hệ thống tài liệu và củng cố **tính làm chủ của BA** (hiểu rõ mình đang làm gì, tác động đến đâu) thay vì phụ thuộc hoàn toàn vào AI.
+> **File tham chiếu:** [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) — MODIFY từ `skills/ba-impact/SKILL.md`
+>
+> **Current state:** Skill read-only, chỉ phân tích impact và trả về recommended commands — không filter input, không tạo manifest, không có checkpoint để BA verify trước khi apply.
+>
+> **Phần modify:** Thêm Phase 0 (5 bước pre-processing) chạy trước impact workflow hiện tại. Thêm Phase 2 (tự động chuyển sang stories/usecase sau khi update xong backbone/FRD).
+>
+> **Mục đích:** AI chỉ nhận business requirement đã lọc, đủ thông tin, không còn contradiction trước khi phân tích impact. BA verify manifest trước khi bất kỳ file nào bị thay đổi.
 
-Khi có requirement mới hoặc thay đổi, BA thực hiện tuần tự theo các bước sau để làm chủ tài liệu và luồng làm việc với AI:
+**Bước 0.1 — Technical Filter:**
+Scan toàn bộ input, flag nội dung kỹ thuật (tên cột DB, API endpoint, framework, SDK...) vào block `[TECHNICAL-NOTE]` tách biệt. Không đưa vào FRD/Backbone. Báo ngắn gọn cho BA, rồi tiếp tục với phần business còn lại.
 
-**Bước 1: Đọc file `README.md` của dự án**
-- Nắm tổng quan kiến trúc và hiểu rõ các thay đổi (logic luồng, edge cases, v.v.).
-- Nhận diện sơ bộ thay đổi này có thể ảnh hưởng đến những nhóm file nào.
+**Bước 0.2 — Feature Count:**
+Phân loại thay đổi thành feature mới / feature cần update. Xuất danh sách để BA confirm trước khi đi sâu.
 
-**Bước 2: Nắm vững luồng chảy dữ liệu tiêu chuẩn (Typical Flow)**
-Mọi thay đổi tài liệu đều phải tuân thủ hướng chảy (trên xuống dưới) như sau:
-1. Absorb `Intake` + Cập nhật `Backbone`.
-2. Cập nhật `Use Case` + `ASCII Screen` (nếu có đổi UI).
-3. Cập nhật `FRD`.
-4. Cập nhật `SRS` (đặc biệt là Business Rules).
-5. Cập nhật ngược lại `Backbone` (chỉ áp dụng cho Message List nếu có sinh mới. *Lưu ý: Tuyệt đối không fetch ngược Business Rules từ SRS về Backbone nếu nó không phải là Common Rules*).
+**Bước 0.3 — Input Clarity Check (before update backbone + FRD):**
+Với từng feature, kiểm tra đủ 3 yếu tố: **Actor** (cụ thể, không chung chung), **UI Coverage** (có màn hình không, đã đủ trạng thái chưa), **Business Rules** (điều kiện trigger, constraint, edge case). Thiếu yếu tố nào → hỏi BA phần đó, không đoán.
 
-**Bước 3: Thực thi cùng AI (Flow v2.1)**
-Thay vì tự làm thủ công hoặc khoán trắng 1 cục cho AI, BA tương tác với bộ công cụ mới:
-1. **Dùng lệnh `/ba-absorb`**: Yêu cầu AI đọc spec mới và phân tích.
-2. **BA Confirm Proposal**: BA đọc file Proposal (Scope, Sequence, EC) và xác nhận chốt phương án.
-3. **AI tự động quét Impact và Update**: Chuyển giao sang `/ba-impact` quét ảnh hưởng chéo → AI tự động update dọc theo luồng chảy tài liệu (Bước 2).
-4. **BA Review lần cuối**: Kiểm tra lại các file tài liệu đã được AI cập nhật.
+**Bước 0.4 — Contradiction Check:**
+So proposed changes với rules hiện tại trong backbone và FRD. Nếu có mâu thuẫn → liệt kê rõ và cùng BA resolve trước khi tiếp tục. Ghi lại kết quả resolve để đưa vào manifest.
+
+**Bước 0.5 — Change Manifest + Feature Plan:**
+Tạo 1 file duy nhất gồm 2 phần:
+- **Change Manifest** (theo [`change-manifest-template.md`](../02_BA_Absorption_Filter/change-manifest-template.md)): liệt kê chính xác file nào thay đổi, section nào, loại thay đổi ADD/UPDATE/DELETE, source ref — chỉ cho backbone + FRD, chưa đi sâu vào US/UC.
+- **Feature Plan** (section `## Feature Plan` ở cuối manifest): danh sách US/UC cần tạo/sửa cho từng feature.
+
+Lưu tại: `plans/{slug}-{date}/shared/manifests/CM-{YYMMDD}-{HHMM}-{source-slug}.md`
+⚠️ Thư mục `shared/manifests/` phải được gitignore — không commit lên PR hoặc main.
+
+Hiển thị toàn bộ manifest + feature plan cho BA review. **BA approve → tiếp tục.**
 
 ---
 
-## 4. Open Questions for Manager
+#### Bước 3 — Agent update Backbone + FRD
+
+> **File tham chiếu:** [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) — Phase 1 (giữ nguyên impact workflow gốc)
+>
+> **Current state:** ba-impact khi detect thay đổi sẽ recommend update toàn bộ artifact chain (backbone, FRD, US, UC) — về mặt kỹ thuật có thể thực hiện hết trong 1 lần.
+>
+> **Phần modify:** Tách thành 3 bước riêng (Bước 3: backbone+FRD / Bước 4: stories / Bước 5: usecase) với checkpoint BA confirm ở mỗi output. Không thay đổi logic impact workflow, chỉ giới hạn scope của từng bước và thêm auto-handoff sang bước tiếp theo sau khi xong.
+>
+> **Mục đích:** Control change output theo nguyên tắc HITL — mỗi bước AI chỉ làm 1 loại artifact, BA verify và confirm trước khi đi tiếp. Không phải vì ba-impact không làm được, mà để đảm bảo BA không bỏ sót lỗi khi output quá lớn.
+
+Sau khi BA approve manifest, agent **tự chia task và thực hiện lần lượt** các thay đổi trong manifest — không hỏi thêm trừ khi phát hiện thiếu thông tin trong quá trình update. Thứ tự: backbone trước, FRD sau (đúng luồng chảy dữ liệu từ trên xuống).
+
+Scope bước này chỉ là backbone + FRD. US và UC được tách sang Bước 4/5 để BA có checkpoint riêng confirm từng output trước khi write.
+
+---
+
+#### Bước 4 — Viết User Story (per feature)
+
+> **File tham chiếu:** [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) — MODIFY từ `skills/ba-start/steps/stories.md`
+>
+> **Current state:** Sinh US thẳng từ backbone — không có gate kiểm tra thông tin trước khi draft, không có confirm loop trước khi write file.
+>
+> **Phần modify:** Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, chỉ hỏi BA phần còn thiếu), Sub-step 7.1 (draft → confirm loop không giới hạn → write), Sub-step 7.2 (handoff prompt sang usecase).
+>
+> **Mục đích:** BA verify từng US trước khi ghi file — đảm bảo Role/Action/Benefit đủ và đúng.
+
+Sau khi ba-impact update backbone + FRD + các file liên quan, agent tự gọi skill ba-start stories (như ba-kit đang làm hiện tại). (proposal chỉ modify ba-start stories SKILL)
+
+Agent tự bắt đầu từ Feature 1 trong Feature Plan mà không cần BA gõ lệnh thêm. Với mỗi feature:
+
+**Info-Sufficiency Gate:** Kiểm tra đủ 3 yếu tố trước khi draft:
+- **Role:** Ai là người dùng? (cụ thể)
+- **Action:** Họ muốn làm gì? (động từ + đối tượng cụ thể)
+- **Benefit:** Lợi ích business là gì?
+
+Thiếu yếu tố nào → hỏi BA trước. Đủ rồi → draft story trong chat → BA confirm (không giới hạn vòng iterate) → write file.
+
+Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`).
+
+---
+
+#### Bước 5 — Viết Use Case (per feature)
+
+> **File tham chiếu:** [`usecase.md`](../01_BA_Kit_Templates_Moi/usecase.md) — ADD NEW, target `skills/ba-start/steps/usecase.md`
+> **Template:** [`usecase-item-template.md`](../usecase-item-template.md) | **Edge case analysis:** [`seq-to-ec-template.md`](../02_BA_Absorption_Filter/seq-to-ec-template.md)
+> **Current state:** Không tồn tại — hiện tại không có step tạo UC trong ba-start. UC phải viết tay hoặc ngoài flow tự động.
+> **Phần modify (add new):** 5 sub-steps: UC-1 validate input (Actor/Preconditions/Trigger/Flows, hỏi BA phần còn thiếu) → UC-2 draft Mermaid sequence + Break Point Analysis → EC grouping → UC-3 confirm loop không giới hạn → UC-4 write+self-validate → UC-5 handoff.
+> **Mục đích:** Lấp khoảng trống trong luồng, đảm bảo UC có đủ chất lượng (sequence diagram, edge cases, self-validate checklist) trước khi write file.
+
+**UC-1 Validate Input:** Kiểm tra đủ thông tin để điền template: Actor, Preconditions, Trigger, Main Flow (đủ bước để mô tả toàn bộ tương tác actor↔system từ trigger đến postcondition), Alternate Flows, Error Flows, Postconditions. Thiếu → hỏi BA phần đó.
+
+**UC-2 Draft Sequence + Edge Cases:**
+- Sau khi ghi nhận đủ thông tin 
+- Vẽ Mermaid sequence diagram (main flow + alternate flows)
+- Phân tích Break Points theo `seq-to-ec-template.md §2`: mỗi interaction line có thể gãy ở đâu, root cause, error message, severity -> Group thành Edge Cases (`EC-{MODULE}-{NNN}`)
+- Show toàn bộ draft trong chat để BA xem
+
+**UC-3 Confirm:** BA confirm (không giới hạn vòng) → write file.
+
+**UC-4 Write + Self-validate:** Write `usecases/uc-{slug}.md` theo template. Tự check đủ sections, sau đó báo kết quả: PASS / WARN / FAIL.
+
+**UC-5 Handoff:** Nếu còn feature → bắt đầu feature tiếp theo. Nếu xong hết → hỏi BA có muốn chạy audit không.
+
+---
+
+#### Bước 6 — Audit sau khi xong tất cả features
+
+> **File tham chiếu:** [`ba-content-audit-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-content-audit-SKILL.md) — MODIFY từ `skills/ba-content-audit/SKILL.md`
+>
+> **Guideline:** `audit-guideline-post-update.md`
+>
+> **Current state:** Chỉ có full audit mode (toàn bộ project), tập trung format và traceability — không check content correctness, không so sánh plan vs reality.
+>
+> **Phần modify:** Thêm `--manifest <path>` argument + Step 3a Incremental Audit mode chạy trước full audit (Layer 1 Completeness, Layer 2 Consistency, Layer 3 Correctness). `git diff {baseline_sha}...HEAD` so với SHA ghi trong manifest, không phụ thuộc main.
+>
+> **Mục đích:** Audit đúng phần đã thay đổi, bổ sung correctness check (ACs measurable, business rules nhất quán, flow không conflict giữa features).
+
+```
+/ba-content-audit --slug {slug} --manifest plans/{slug}-{date}/shared/manifests/CM-{date}-{slug}.md
+```
+
+**Incremental Audit (chạy trước):** Đọc Change Manifest (kế hoạch) + `git diff {baseline_sha}...HEAD` (thực tế, trong đó `baseline_sha` được lưu vào manifest lúc tạo — là SHA commit ngay trước khi bắt đầu apply thay đổi) → so sánh plan vs reality:
+- **Layer 1 — Completeness:** File nào planned nhưng chưa update? File nào thay đổi ngoài kế hoạch?
+- **Layer 2 — Consistency:** Traceability chain (Backbone → FRD → US → UC), cross-check US↔UC pairs, terminology nhất quán
+- **Layer 3 — Correctness:** ACs có measurable không? Có conflict giữa features không? Diagrams sync với text không?
+
+**Full Audit (chạy sau):** Scan toàn bộ artifacts như bình thường.
+
+---
+
+### 2.4. Tổng hợp Suggestions (Changes to BA-kit)
+
+| File | Loại | Thay đổi chính | Target |
+|---|---|---|---|
+| [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) | MODIFY | Thêm Phase 0 (5 bước pre-processing: Technical Filter → Feature Count → Input Clarity Check → Contradiction Check → Change Manifest + Feature Plan) + Phase 2 (tự động chuyển sang stories/usecase sau update xong backbone/FRD) | `skills/ba-impact/SKILL.md` |
+| [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) | MODIFY | Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, hỏi BA phần còn thiếu) + Sub-step 7.1 (draft → confirm loop không giới hạn → write) + Sub-step 7.2 (handoff prompt sang usecase) | `skills/ba-start/steps/stories.md` |
+| [`usecase.md`](../01_BA_Kit_Templates_Moi/usecase.md) | ADD NEW | File mới, 5 sub-steps: validate input (Actor/Preconditions/Trigger/Flows) → draft Mermaid sequence + Break Point Analysis → EC grouping → BA confirm loop → write+self-validate → handoff | `skills/ba-start/steps/usecase.md` |
+| [`ba-content-audit-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-content-audit-SKILL.md) | MODIFY | Thêm `--manifest` argument + Step 3a Incremental Audit mode (Layer 1 Completeness, Layer 2 Consistency, Layer 3 Correctness). `git diff {baseline_sha}...HEAD` — SHA từ manifest, không phụ thuộc main | `skills/ba-content-audit/SKILL.md` |
+
+**Notes chung:**
+- `shared/manifests/` phải gitignore — chỉ lưu local, không commit.
+- `ba-content-audit` incremental mode dùng `git diff {baseline_sha}...HEAD` — SHA được ghi vào manifest lúc tạo (trạng thái trước khi apply thay đổi), không phụ thuộc vào `main` hay bất kỳ branch nào khác.
+- Stories và Use Case: info-sufficiency gate đọc backbone/FRD trước, chỉ hỏi BA phần còn thiếu. Confirm loop không giới hạn số vòng.
+
+---
+
+## 3. Open Questions for Manager
 
 1. **Vị trí lưu trữ Open Questions (OQ)**
    - *Thực trạng:* Trong dự án hiện tại, các OQ đang được tập hợp hết vào Spec chung (ưu điểm: tập trung, dễ theo dõi tiến độ giải quyết). Tuy nhiên, template BA-kit mới đề xuất đặt OQ vào ngay bên trong file Use Case tương ứng (ưu điểm: giữ nguyên bối cảnh context, giúp team dev/QC và AI dễ hiểu nhất mà không phải trace ngược lại SRS).
@@ -267,16 +317,22 @@ Thay vì tự làm thủ công hoặc khoán trắng 1 cục cho AI, BA tương 
 - Các file template đã sửa đổi theo đề xuất Mục 1.3 (Backbone, FRD, UC, US, SRS Spec, SRS Compiled).
 - Vị trí: `../01_BA_Kit_Templates_Moi/`
 
+**Files thay đổi skill (v2 — tích hợp workflow):**
+- **[`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md)**: MODIFY — thêm Phase 0 (5 bước pre-processing) + Feature Plan section. Target: `skills/ba-impact/SKILL.md`.
+- **[`stories.md`](../01_BA_Kit_Templates_Moi/stories.md)**: MODIFY — thêm info-sufficiency gate, draft→confirm loop (không giới hạn), handoff prompt sang usecase. Target: `skills/ba-start/steps/stories.md`.
+- **[`usecase.md`](../01_BA_Kit_Templates_Moi/usecase.md)**: ADD NEW — 5 sub-steps: validate → draft sequence+EC → confirm → write+self-validate → handoff. Target: `skills/ba-start/steps/usecase.md`.
+- **[`ba-content-audit-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-content-audit-SKILL.md)**: MODIFY — thêm `--manifest` argument, Incremental Audit mode (Layer 1-3), tích hợp `audit-guideline-post-update.md`. Target: `skills/ba-content-audit/SKILL.md`.
+
 ---
 
 ## 5. Tổng kết (Conclusion)
 
-Toàn bộ bản đề xuất giải pháp này được xây dựng xoay quanh **2 giá trị cốt lõi**:
-1. **Chia nhỏ các bước thực thi** (Tách luồng `ba-absorb` và `ba-impact`).
-2. **Tinh gọn Input và Output** cho AI trong từng bước (Tối giản template BA-kit, tối ưu chuỗi đọc file).
+Toàn bộ bản đề xuất giải pháp này được xây dựng xoay quanh **mục tiêu cốt lõi**:
 
-Hai giá trị này nhằm phục vụ **2 mục tiêu chính**:
-- **Dành cho con người (BA/Team):** Giúp BA nắm chắc được scope và cấu trúc (structure) để dễ dàng kiểm soát, review và quản lý output tài liệu.
-- **Dành cho AI:** Giảm thiểu tối đa khả năng miss requirement và tình trạng bịa đặt thông tin (hallucination) do bị quá tải ngữ cảnh.
+> **Human verify mọi output AI tạo ra.** Mỗi bước AI làm xong đều có checkpoint để BA xem và confirm trước khi đi tiếp.
 
-*(Giải pháp đề xuất trên đây có thể còn nhiều thiếu sót. Rất mong Manager xem xét, cân nhắc để tinh chỉnh và ứng dụng sao cho phù hợp nhất để giữ vững được 2 mục tiêu cốt lõi trên.)*
+Để đạt được mục tiêu đó, hai nguyên tắc kỹ thuật được áp dụng:
+1. **Tối ưu input**: AI chỉ nhận thông tin cần thiết cho từng bước — không đọc lại toàn bộ lịch sử, không xử lý kỹ thuật lẫn nghiệp vụ cùng lúc.
+2. **Tối ưu output**: Mỗi bước AI ra output đủ nhỏ để BA đọc và verify được — draft story, draft UC, manifest trước khi apply, audit sau khi xong.
+
+*(Đề xuất này có thể còn thiếu sót. Rất mong Manager xem xét, cân nhắc để tinh chỉnh sao cho phù hợp nhất với thực tế dự án.)*
