@@ -301,11 +301,7 @@ Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`)
    - *Bối cảnh:* Template SRS hiện tại có mục "Yêu cầu chức năng" với cột "Yêu cầu (Requirement)" và cột "Nguồn". Trong khi đó, Use Case đã có Main Flow steps đóng vai trò AC. Chưa rõ ranh giới giữa FR và AC là gì để tránh viết trùng nội dung.
    - *Câu hỏi 1:* "Yêu cầu (Requirement)" trong bảng FR của SRS khác AC ở UC như thế nào? FR là điều kiện hệ thống phải đáp ứng (what), còn AC là tiêu chí verify một story/UC cụ thể (how to test) — hay team đang dùng theo cách khác?
    - *Câu hỏi 2:* Cột "Nguồn" trong bảng FR lấy từ đâu — từ UC ID, từ backbone feature ID, hay từ tài liệu spec gốc của khách?
-
-3. **SRS Compiled — "compile từ file nguồn chuẩn" là compile theo cách nào?**
-   - *Bối cảnh:* BA-kit đề xuất SRS Compiled được tổng hợp tự động từ các file canon (UC, US, backbone). Chưa rõ cơ chế thực tế là gì.
-   - *Câu hỏi:* "Compile tự động" ở đây là dùng script/code chạy merge các file markdown lại, hay là AI đọc các file nguồn rồi sinh lại nội dung, hay BA tự copy-paste có hướng dẫn? Cơ chế này ảnh hưởng đến việc team có thể maintain SRS Compiled như thế nào khi có thay đổi.
-
+Note: tìm hiểu từ bộ skill - start 
 ---
 
 ## 4. Tài liệu tham khảo & Template đính kèm
