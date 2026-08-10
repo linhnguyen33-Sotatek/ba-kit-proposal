@@ -307,8 +307,6 @@ Note: tìm hiểu từ bộ skill - start
 ## 4. Tài liệu tham khảo & Template đính kèm
 
 ### 4.1. Bộ BA Absorption Filter (Middleware Scripts)
-- **[`ba-absorption-filter.md`](../02_BA_Absorption_Filter/ba-absorption-filter.md)**: Ruleset cốt lõi — ranh giới AI, chính sách lọc kỹ thuật, 7 bước phân tích luồng.
-- **[`absorb.md`](../02_BA_Absorption_Filter/absorb.md)**: Workflow Giai đoạn 1 (`/ba-absorb`) — đọc spec, lọc tech, vẽ Sequence, sinh Edge Cases, xuất Proposal.
 - **[`change-manifest-template.md`](../02_BA_Absorption_Filter/change-manifest-template.md)**: Template chuẩn cho báo cáo Change Manifest.
 - **[`seq-to-ec-template.md`](../02_BA_Absorption_Filter/seq-to-ec-template.md)**: Template phân tích Break Points từ Sequence → bảng Edge Cases (`EC-{MOD}-{NNN}`).
 
