@@ -63,7 +63,6 @@ Cùng một luồng xử lý nhưng hiện tại có thể được mô tả ở
 **1. Requirements Backbone**
 | Thay đổi | Lý do |
 |---|---|
-| Gộp 3 bảng "Feature Map", "Functional Backbone", "Story Map" thành **1 bảng duy nhất**. | Tránh 3 phiên bản lệch nhau. Bỏ tầng ID `FR-*` thừa. |
 | Đảo thứ tự: "Danh sách module" lên đầu. | Đúng phân cấp: Portal → Module → Feature → UC. |
 | Bỏ "Tính năng bao phủ", thêm "Linked Module" ở Feature Map. | Tránh trace 2 chiều làm lệch dữ liệu. |
 
@@ -82,7 +81,6 @@ FRD được hiểu ở đây là file để khách hàng/ PO/PM nhanh chóng n�
 | Thay đổi | Lý do |
 |---|---|
 | Thêm `feature_ref` ở frontmatter; xóa "## Trace" ở body. | Tránh lặp trace dễ gây lệch. |
-| UC và US dùng chung số thứ tự tên file. | Tra cứu 2 chiều nhanh. |
 | Sequence Diagram: bổ sung scope note. | Chỉ vẽ phạm vi 1 UC. |
 
 **4. User Story**
@@ -90,7 +88,6 @@ FRD được hiểu ở đây là file để khách hàng/ PO/PM nhanh chóng n�
 |---|---|
 | Giữ nguyên frontmatter gốc. | Không thêm field mới ở giai đoạn này. |
 | Bổ sung ghi chú: Story Statement viết TRƯỚC, AC viết SAU (rút gọn từ UC). | AC luôn bắt nguồn từ UC, không tự viết mới. |
-| Bổ sung ghi chú điều hướng chung số thứ tự với UC. | Tra cứu 2 chiều nhanh. |
 | Bỏ "## Trace" ở body. | Trace đủ ở frontmatter; body dính ID lỗi thời (`FR-*`). |
 
 **5. SRS Spec**
@@ -98,7 +95,6 @@ SRS được hiểu ở đây là file để Dev/QC nhanh chóng nắm được 
 | Thay đổi | Lý do |
 |---|---|
 | Thêm frontmatter: `frd_ref`. | Khép kín tham chiếu chéo với FRD. |
-| Xóa "Functional Requirements". | Trỏ sang FRD; dùng UC ID làm mã yêu cầu. |
 | "Business Rules" → bảng tham chiếu. | Rule text thuộc Backbone. |
 | Giữ nguyên "Data Constraints". | SSOT cho đặc tả dữ liệu. |
 
@@ -106,8 +102,6 @@ SRS được hiểu ở đây là file để Dev/QC nhanh chóng nắm được 
 | Thay đổi | Lý do |
 |---|---|
 | Bảng "Use Cases": thêm cột "US Ref" trỏ tới User Story. | PM/QC click thẳng vào US xem checklist. |
-| Xóa bảng "Functional Requirements". | Bỏ tầng ID `FR-*` toàn dự án. |
-| Thêm link "Tham chiếu FRD" ở đầu file. | Bối cảnh business mà không copy lại. |
 | DFD: bổ sung scope note. | Chỉ vẽ luồng data, không vẽ hành động. |
 
 ---
@@ -302,6 +296,15 @@ Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`)
 1. **Vị trí lưu trữ Open Questions (OQ)**
    - *Thực trạng:* Trong dự án hiện tại, các OQ đang được tập hợp hết vào Spec chung (ưu điểm: tập trung, dễ theo dõi tiến độ giải quyết). Tuy nhiên, template BA-kit mới đề xuất đặt OQ vào ngay bên trong file Use Case tương ứng (ưu điểm: giữ nguyên bối cảnh context, giúp team dev/QC và AI dễ hiểu nhất mà không phải trace ngược lại SRS).
    - *Câu hỏi:* Vậy dự án nên chốt phương án lưu trữ OQ ở đâu để tối ưu nhất cho cả BA (quản lý OQ) lẫn Dev/QC/AI (đọc hiểu spec)?
+
+2. **SRS — "Yêu cầu chức năng (FR)" khác gì AC?**
+   - *Bối cảnh:* Template SRS hiện tại có mục "Yêu cầu chức năng" với cột "Yêu cầu (Requirement)" và cột "Nguồn". Trong khi đó, Use Case đã có Main Flow steps đóng vai trò AC. Chưa rõ ranh giới giữa FR và AC là gì để tránh viết trùng nội dung.
+   - *Câu hỏi 1:* "Yêu cầu (Requirement)" trong bảng FR của SRS khác AC ở UC như thế nào? FR là điều kiện hệ thống phải đáp ứng (what), còn AC là tiêu chí verify một story/UC cụ thể (how to test) — hay team đang dùng theo cách khác?
+   - *Câu hỏi 2:* Cột "Nguồn" trong bảng FR lấy từ đâu — từ UC ID, từ backbone feature ID, hay từ tài liệu spec gốc của khách?
+
+3. **SRS Compiled — "compile từ file nguồn chuẩn" là compile theo cách nào?**
+   - *Bối cảnh:* BA-kit đề xuất SRS Compiled được tổng hợp tự động từ các file canon (UC, US, backbone). Chưa rõ cơ chế thực tế là gì.
+   - *Câu hỏi:* "Compile tự động" ở đây là dùng script/code chạy merge các file markdown lại, hay là AI đọc các file nguồn rồi sinh lại nội dung, hay BA tự copy-paste có hướng dẫn? Cơ chế này ảnh hưởng đến việc team có thể maintain SRS Compiled như thế nào khi có thay đổi.
 
 ---
 
