@@ -69,11 +69,24 @@ baseline_sha: "[git commit SHA tại thời điểm manifest được tạo — 
 
 ---
 
-## Edge Cases (nếu có UC mới/update)
+## Feature Plan
 
-| EC-ID | Name | Flow Ref | User Sees | System Does | Recovery |
-|---|---|---|---|---|---|
-| EC-{MOD}-{NNN} | [tên EC] | [UC-ID §section] | [error message / UI state] | [system action] | [recovery path] |
+> Liệt kê US/UC cần tạo mới hoặc sửa cho từng feature — dựa vào danh sách features từ Bước 2.2.
+> AI dùng section này để tự chia task sau khi BA approve manifest.
+
+### Feature 1: [tên feature]
+
+- **Loại:** Mới / Update
+- **User Story cần tạo:** `us-[slug]` — [mô tả 1 dòng]
+- **User Story cần modify:** `us-[slug]` — [thay đổi gì]
+- **UC cần tạo:** `uc-[slug]` — [mô tả 1 dòng]
+- **UC cần modify:** `uc-[slug]` — [thay đổi gì]
+
+### Feature 2: [tên feature]
+
+- **Loại:** Mới / Update
+- **User Story cần tạo:** ...
+- **UC cần tạo:** ...
 
 ---
 

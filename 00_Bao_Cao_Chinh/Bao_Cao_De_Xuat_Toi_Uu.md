@@ -170,13 +170,13 @@ BA đưa file spec của KH vào thư mục project. Chạy lệnh:
 **Bước 2.1 — Technical Filter:**
 Scan toàn bộ input, flag nội dung kỹ thuật (tên cột DB, API endpoint, framework, SDK...) vào block `[TECHNICAL-NOTE]` tách biệt. Không đưa vào FRD/Backbone. Báo ngắn gọn cho BA, rồi tiếp tục với phần business còn lại.
 
-**Bước 2.2 — Feature Count:**
+**Bước 2.2 — Feature Count (for Feature Plan):**
 Phân loại thay đổi thành feature mới / feature cần update. Xuất danh sách để BA confirm trước khi đi sâu.
 
-**Bước 2.3 — Input Clarity Check:**
+**Bước 2.3 — Input Clarity Check (for Change Manifest):**
 Với từng feature, kiểm tra đủ 3 yếu tố: **Actor** (cụ thể, không chung chung), **UI Coverage** (có màn hình không, đã đủ trạng thái chưa), **Business Rules** (điều kiện trigger, constraint, edge case). Thiếu yếu tố nào → hỏi BA phần đó, không đoán.
 
-**Bước 2.4 — Contradiction Check:**
+**Bước 2.4 — Contradiction Check (for Change Manifest):**
 So proposed changes với rules hiện tại trong backbone và FRD. Nếu có mâu thuẫn → liệt kê rõ và cùng BA resolve trước khi tiếp tục. Ghi lại kết quả resolve để đưa vào manifest.
 
 **Bước 2.5 — Change Manifest + Feature Plan:**
