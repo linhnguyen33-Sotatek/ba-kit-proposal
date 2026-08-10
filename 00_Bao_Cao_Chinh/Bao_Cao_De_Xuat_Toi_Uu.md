@@ -128,11 +128,11 @@ flowchart TD
     A --> B["/ba-impact --slug {slug} {input}"]
 
     subgraph "Phase 0 — Pre-Processing (ba-impact mới)"
-        B --> B1["0.1 Technical Filter \n→ tách kỹ thuật ra [TECHNICAL-NOTE]"]
-        B1 --> B2["0.2 Feature Count\n→ phân loại các user story & use case cần update \n→ BA confirm danh sách"]
-        B2 --> B3["0.3 Input Clarity Check \n→ hỏi BA phần thiếu: \n Actor / UI Coverage / Business Rules"]
-        B3 --> B4["0.4 Contradiction Check\n→ so với backbone/FRD \n → cùng BA resolve nếu có mâu thuẫn"]
-        B4 --> B5["0.5 Change Manifest + Feature Plan \n → BA review & approve"]
+        B --> B1["2.1 Technical Filter \n→ tách kỹ thuật ra [TECHNICAL-NOTE]"]
+        B1 --> B2["2.2 Feature Count\n→ phân loại các user story & use case cần update \n→ BA confirm danh sách"]
+        B2 --> B3["2.3 Input Clarity Check \n→ hỏi BA phần thiếu: \n Actor / UI Coverage / Business Rules"]
+        B3 --> B4["2.4 Contradiction Check\n→ so với backbone/FRD \n → cùng BA resolve nếu có mâu thuẫn"]
+        B4 --> B5["2.5 Change Manifest + Feature Plan \n → BA review & approve"]
     end
 
     B5 -->|BA approve| C["Agent chia task update \n backbone + FRD lần lượt \n "]
@@ -157,29 +157,29 @@ BA đưa file spec của KH vào thư mục project. Chạy lệnh:
 
 ---
 
-#### Bước 2 — Phase 0: Pre-Processing (`ba-impact` ver update)
+#### Bước 2 — Pre-Processing (`ba-impact` ver update)
 
 > **File tham chiếu:** [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) — MODIFY từ `skills/ba-impact/SKILL.md`
 >
-> **Current state:** Skill read-only, chỉ phân tích impact và trả về recommended commands — không filter input, không tạo manifest, không có checkpoint để BA verify trước khi apply.
+> **Current state:** Skill read-only, chỉ phân tích impact và trả về recommended commands. BA phải tự tạo manifest theo template — skill không tự sinh file manifest, không breakdown chi tiết section nào thay đổi, source từ đâu, tag client-spec hay BA-inferred. Không có checkpoint để BA verify trước khi apply.
 >
 > **Phần modify:** Thêm Phase 0 (5 bước pre-processing) chạy trước impact workflow hiện tại. Thêm Phase 2 (tự động chuyển sang stories/usecase sau khi update xong backbone/FRD).
 >
 > **Mục đích:** AI chỉ nhận business requirement đã lọc, đủ thông tin, không còn contradiction trước khi phân tích impact. BA verify manifest trước khi bất kỳ file nào bị thay đổi.
 
-**Bước 0.1 — Technical Filter:**
+**Bước 2.1 — Technical Filter:**
 Scan toàn bộ input, flag nội dung kỹ thuật (tên cột DB, API endpoint, framework, SDK...) vào block `[TECHNICAL-NOTE]` tách biệt. Không đưa vào FRD/Backbone. Báo ngắn gọn cho BA, rồi tiếp tục với phần business còn lại.
 
-**Bước 0.2 — Feature Count:**
+**Bước 2.2 — Feature Count:**
 Phân loại thay đổi thành feature mới / feature cần update. Xuất danh sách để BA confirm trước khi đi sâu.
 
-**Bước 0.3 — Input Clarity Check (before update backbone + FRD):**
+**Bước 2.3 — Input Clarity Check:**
 Với từng feature, kiểm tra đủ 3 yếu tố: **Actor** (cụ thể, không chung chung), **UI Coverage** (có màn hình không, đã đủ trạng thái chưa), **Business Rules** (điều kiện trigger, constraint, edge case). Thiếu yếu tố nào → hỏi BA phần đó, không đoán.
 
-**Bước 0.4 — Contradiction Check:**
+**Bước 2.4 — Contradiction Check:**
 So proposed changes với rules hiện tại trong backbone và FRD. Nếu có mâu thuẫn → liệt kê rõ và cùng BA resolve trước khi tiếp tục. Ghi lại kết quả resolve để đưa vào manifest.
 
-**Bước 0.5 — Change Manifest + Feature Plan:**
+**Bước 2.5 — Change Manifest + Feature Plan:**
 Tạo 1 file duy nhất gồm 2 phần:
 - **Change Manifest** (theo [`change-manifest-template.md`](../02_BA_Absorption_Filter/change-manifest-template.md)): liệt kê chính xác file nào thay đổi, section nào, loại thay đổi ADD/UPDATE/DELETE, source ref — chỉ cho backbone + FRD, chưa đi sâu vào US/UC.
 - **Feature Plan** (section `## Feature Plan` ở cuối manifest): danh sách US/UC cần tạo/sửa cho từng feature.
@@ -197,9 +197,9 @@ Hiển thị toàn bộ manifest + feature plan cho BA review. **BA approve → 
 >
 > **Current state:** ba-impact khi detect thay đổi sẽ recommend update toàn bộ artifact chain (backbone, FRD, US, UC) — về mặt kỹ thuật có thể thực hiện hết trong 1 lần.
 >
-> **Phần modify:** Tách thành 3 bước riêng (Bước 3: backbone+FRD / Bước 4: stories / Bước 5: usecase) với checkpoint BA confirm ở mỗi output. Không thay đổi logic impact workflow, chỉ giới hạn scope của từng bước và thêm auto-handoff sang bước tiếp theo sau khi xong.
+> **Phần modify:** Tách thành 3 bước riêng (Bước 3: backbone+FRD / Bước 4: stories / Bước 5: usecase) với checkpoint BA confirm ở mỗi output. Không thay đổi logic impact workflow, chỉ giới hạn scope, thêm yêu cầu human verify của từng bước và thêm auto-handoff sang bước tiếp theo sau khi xong.
 >
-> **Mục đích:** Control change output theo nguyên tắc HITL — mỗi bước AI chỉ làm 1 loại artifact, BA verify và confirm trước khi đi tiếp. Không phải vì ba-impact không làm được, mà để đảm bảo BA không bỏ sót lỗi khi output quá lớn.
+> **Mục đích:** Control change output theo nguyên tắc HITL (Human-In-The-Loop) — mỗi bước AI chỉ làm 1 loại artifact, BA verify và confirm trước khi đi tiếp. Không phải vì ba-impact không làm được, mà để đảm bảo BA không bỏ sót lỗi khi output quá lớn.
 
 Sau khi BA approve manifest, agent **tự chia task và thực hiện lần lượt** các thay đổi trong manifest — không hỏi thêm trừ khi phát hiện thiếu thông tin trong quá trình update. Thứ tự: backbone trước, FRD sau (đúng luồng chảy dữ liệu từ trên xuống).
 
@@ -211,7 +211,7 @@ Scope bước này chỉ là backbone + FRD. US và UC được tách sang Bư�
 
 > **File tham chiếu:** [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) — MODIFY từ `skills/ba-start/steps/stories.md`
 >
-> **Current state:** Sinh US thẳng từ backbone — không có gate kiểm tra thông tin trước khi draft, không có confirm loop trước khi write file.
+> **Current state:** Có Backbone Authority Gate + Governance Gate (rerun check). Skill đọc backbone/FRD trước khi generate, nhưng không có info-sufficiency check để hỏi BA những gì còn thiếu trước khi draft — AI generate thẳng rồi write file, không có confirm loop.
 >
 > **Phần modify:** Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, chỉ hỏi BA phần còn thiếu), Sub-step 7.1 (draft → confirm loop không giới hạn → write), Sub-step 7.2 (handoff prompt sang usecase).
 >
@@ -285,8 +285,8 @@ Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`)
 
 | File | Loại | Thay đổi chính | Target |
 |---|---|---|---|
-| [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) | MODIFY | Thêm Phase 0 (5 bước pre-processing: Technical Filter → Feature Count → Input Clarity Check → Contradiction Check → Change Manifest + Feature Plan) + Phase 2 (tự động chuyển sang stories/usecase sau update xong backbone/FRD) | `skills/ba-impact/SKILL.md` |
-| [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) | MODIFY | Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, hỏi BA phần còn thiếu) + Sub-step 7.1 (draft → confirm loop không giới hạn → write) + Sub-step 7.2 (handoff prompt sang usecase) | `skills/ba-start/steps/stories.md` |
+| [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) | MODIFY | Thêm Phase 0 (5 bước pre-processing: Technical Filter → Feature Count → Input Clarity Check → Contradiction Check → Change Manifest + Feature Plan tự động với breakdown source/section/tag) + Phase 2 (tự động chuyển sang stories/usecase sau update xong backbone/FRD) | `skills/ba-impact/SKILL.md` |
+| [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) | MODIFY | Giữ nguyên Backbone Authority Gate + Governance Gate. Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, hỏi BA phần còn thiếu) + Sub-step 7.1 (draft → confirm loop không giới hạn → write) + Sub-step 7.2 (handoff prompt sang usecase) | `skills/ba-start/steps/stories.md` |
 | [`usecase.md`](../01_BA_Kit_Templates_Moi/usecase.md) | ADD NEW | File mới, 5 sub-steps: validate input (Actor/Preconditions/Trigger/Flows) → draft Mermaid sequence + Break Point Analysis → EC grouping → BA confirm loop → write+self-validate → handoff | `skills/ba-start/steps/usecase.md` |
 | [`ba-content-audit-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-content-audit-SKILL.md) | MODIFY | Thêm `--manifest` argument + Step 3a Incremental Audit mode (Layer 1 Completeness, Layer 2 Consistency, Layer 3 Correctness). `git diff {baseline_sha}...HEAD` — SHA từ manifest, không phụ thuộc main | `skills/ba-content-audit/SKILL.md` |
 
