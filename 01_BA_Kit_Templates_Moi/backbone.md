@@ -69,8 +69,9 @@ Run Step 5 only.
 
 ---
 
-## Sub-step 5.0 — Common Rules Population Gate [THÊM MỚI]
+## Sub-step 5.0 — Common Rules Population Gate 
 
+<!--
 > **Vị trí trong flow:** Chạy SAU khi backbone.md đã được write, TRƯỚC khi write `paths.common_rules`.
 
 **Vấn đề với flow hiện tại:**
@@ -80,6 +81,7 @@ Backbone step hiện tại tự động populate CR-* codes từ backbone scope 
 - BA không có checkpoint để kiểm soát scope của CR-* trước khi module BAs bắt đầu reference.
 
 **Flow mới:**
+-->
 
 1. **Draft CR-* list:** Backbone phân tích scope từ intake và backbone vừa write → đề xuất danh sách CR-* draft gồm:
    - CR-VAL-* cho validation rules áp dụng ≥ 2 screens/UCs (email, password, required field chung).
