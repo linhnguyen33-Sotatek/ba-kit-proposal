@@ -45,6 +45,13 @@ Trong quá trình triển khai thực tế, team nhận thấy một số điể
 **Luồng nghiệp vụ xuất hiện ở nhiều tài liệu:**
 Cùng một luồng xử lý nhưng hiện tại có thể được mô tả ở FRD (Activity diagram), SRS (DFD), và UC (Sequence diagram). Điều này hoàn toàn không sai về mặt kỹ thuật, tuy nhiên nếu **chưa có quy ước ranh giới rõ ràng**, AI và BA dễ vẽ trùng lặp nội dung. Khi nghiệp vụ thay đổi, team sẽ tốn nhiều effort hơn để bảo trì và đồng bộ hóa cả 3 sơ đồ này.
 
+**Common Rules bị dùng sai mục đích:**
+`common-rules.md` trong backbone được AI tự động populate sau khi generate backbone, không có checkpoint BA review. Thực tế quan sát thấy 2 vấn đề:
+- **Scope sai:** AI gen CR-* cho rule chỉ apply 1 UC/feature — thực chất là AC, không phải shared rule. Bảng Common Rules trở thành nơi "dump" rule lặt vặt thay vì chỉ chứa rule thực sự cross-feature.
+- **Trùng với AC:** Cùng một constraint xuất hiện cả ở `common-rules.md` (dưới dạng CR-*) lẫn trong UC Main/Error Flow — gây nhầm lẫn khi BA cần update: sửa 1 chỗ, chỗ kia lạc hậu.
+
+Hậu quả: rule mất ý nghĩa, BA không còn tin tưởng vào bảng Common Rules, dần dần bỏ qua hoặc lại tự viết rule mới thay vì reference CR-* đã có.
+
 ### 1.2. Nguyên tắc thiết kế mới
 
 1. **SSOT**: Mỗi nội dung chỉ viết đầy đủ **1 lần**. File khác chỉ trỏ bằng Link/ID.
@@ -56,8 +63,7 @@ Cùng một luồng xử lý nhưng hiện tại có thể được mô tả ở
    - *FRD Workflow*: Chỉ vẽ luồng tổng thể cross-role.
    - *UC Sequence*: Chỉ vẽ tương tác cục bộ actor ↔ system trong 1 UC.
    - *SRS DFD*: Chỉ vẽ luồng dữ liệu hệ thống ↔ hệ thống.
-4. **Common Rules ≠ AC**: Common Rules áp dụng cho ≥ 2 features. AC chỉ apply cho 1 feature → tuyệt đối không nhét AC vào bảng Common Rules.
-
+4. **Common Rules ≠ AC**: Common Rules áp dụng cho ≥ 2 features. AC chỉ apply cho 1 feature → tuyệt đối không nhét AC vào bảng Common Rules. (bảng Common Rules đang bị dùng như một nơi "dump" rule lặt vặt thay vì chỉ chứa rule thực sự cross-feature, khiến chính bản thân business rule mất ý nghĩa.)
 ### 1.3. Chi tiết thay đổi
 
 **1. Requirements Backbone**
@@ -279,6 +285,7 @@ Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`)
 
 | File | Loại | Thay đổi chính | Target |
 |---|---|---|---|
+| [`backbone.md`](../01_BA_Kit_Templates_Moi/backbone.md) | MODIFY | Thêm Sub-step 5.0 (Common Rules Population Gate): sau khi write backbone, draft danh sách CR-* đề xuất với phân loại ✅ Shared rule / ⚠️ Xem lại / ❌ Là AC → BA review và approve trước khi write `common-rules.md`. Tránh tình trạng AI auto-populate CR-* sai scope (AC của 1 feature bị nhét vào common rules). | `skills/ba-start/steps/backbone.md` |
 | [`ba-impact-SKILL.md`](../01_BA_Kit_Templates_Moi/ba-impact-SKILL.md) | MODIFY | Thêm Phase 0 (5 bước pre-processing: Technical Filter → Feature Count → Input Clarity Check → Contradiction Check → Change Manifest + Feature Plan tự động với breakdown source/section/tag) + Phase 2 (tự động chuyển sang stories/usecase sau update xong backbone/FRD) | `skills/ba-impact/SKILL.md` |
 | [`stories.md`](../01_BA_Kit_Templates_Moi/stories.md) | MODIFY | Giữ nguyên Backbone Authority Gate + Governance Gate. Thêm Sub-step 7.0 (info-sufficiency gate: đọc backbone/FRD trước, hỏi BA phần còn thiếu) + Sub-step 7.1 (draft → confirm loop không giới hạn → write) + Sub-step 7.2 (handoff prompt sang usecase) | `skills/ba-start/steps/stories.md` |
 | [`usecase.md`](../01_BA_Kit_Templates_Moi/usecase.md) | ADD NEW | File mới, 5 sub-steps: validate input (Actor/Preconditions/Trigger/Flows) → draft Mermaid sequence + Break Point Analysis → EC grouping → BA confirm loop → write+self-validate → handoff | `skills/ba-start/steps/usecase.md` |
@@ -296,6 +303,7 @@ Sau khi write xong: hỏi BA có muốn tiếp tục gen Use Case không (`Y/n`)
 1. **Vị trí lưu trữ Open Questions (OQ)**
    - *Thực trạng:* Trong dự án hiện tại, các OQ đang được tập hợp hết vào Spec chung (ưu điểm: tập trung, dễ theo dõi tiến độ giải quyết). Tuy nhiên, template BA-kit mới đề xuất đặt OQ vào ngay bên trong file Use Case tương ứng (ưu điểm: giữ nguyên bối cảnh context, giúp team dev/QC và AI dễ hiểu nhất mà không phải trace ngược lại SRS).
    - *Câu hỏi:* Vậy dự án nên chốt phương án lưu trữ OQ ở đâu để tối ưu nhất cho cả BA (quản lý OQ) lẫn Dev/QC/AI (đọc hiểu spec)?
+   - *Đề xuất:* Dùng cả 2 — không xung đột nếu phân vai rõ: **Spec (intake/backbone) là SOT** — nơi OQ được tạo, tracked, và đánh dấu resolved. **UC chỉ trace lại** bằng ID (vd `OQ-INTAKE-003`) kèm trạng thái, không tự định nghĩa OQ mới. Khi OQ được resolve ở Spec, UC update theo ID reference — BA không cần sync thủ công 2 nơi.
 
 2. **SRS — "Yêu cầu chức năng (FR)" khác gì AC?**
    - *Bối cảnh:* Template SRS hiện tại có mục "Yêu cầu chức năng" với cột "Yêu cầu (Requirement)" và cột "Nguồn". Trong khi đó, Use Case đã có Main Flow steps đóng vai trò AC. Chưa rõ ranh giới giữa FR và AC là gì để tránh viết trùng nội dung.

@@ -66,7 +66,9 @@ Nếu không có mục kỹ thuật nào → skip báo cáo, tiếp tục ngay.
 
 ### Bước 0.2 — Feature Count
 
-Đọc input đã lọc + backbone/frd hiện tại, phân loại thay đổi:
+Đọc input đã lọc + backbone hiện tại (FRD là optional — đọc nếu tồn tại). Từ backbone, trace ra tất cả file liên quan: FRD, US, UC đang tồn tại. **Không đọc `intake.md`.**
+
+Phân loại thay đổi:
 
 **Feature mới hoàn toàn:** Chưa có trong backbone, cần tạo mới actor/UC/US
 **Feature cần update:** Đã có trong backbone, cần sửa rule/flow/actor hiện tại
@@ -101,7 +103,7 @@ Hỏi từng feature một (không hỏi batch). Chỉ chuyển sang feature ti�
 
 So sánh proposed changes với rules hiện tại trong backbone và FRD:
 
-1. Đọc backbone và FRD hiện tại (target sections liên quan đến các features đã identify)
+1. Đọc backbone trước (FRD optional), trace ra các file liên quan (US, UC) từ backbone. **Không đọc `intake.md`.** Chỉ đọc sections liên quan đến features đã identify — không load toàn bộ artifact set
 2. Với mỗi rule/constraint mới → kiểm tra có mâu thuẫn với rule hiện tại không
 
 Nếu phát hiện contradiction:

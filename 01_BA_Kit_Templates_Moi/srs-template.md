@@ -18,9 +18,9 @@
 
 > Compiled từ `usecases/uc-*.md`. Chỉ **1 bảng duy nhất** — không tách riêng "Functional Requirements" vs "Use Case Specifications" vì cả hai vốn cùng trỏ tới cùng 1 UC (thay thế cả bảng "User Stories" trước đây, Story Statement đã gộp vào UC). Requirement code = **UC ID**, không dùng `FR-id` riêng.
 
-| Mã UC | Feature Ref (FRD) | Tên UC | Story Statement | Tác nhân chính | Trigger | Điều kiện tiên quyết | Hậu điều kiện | Ưu tiên | Trạng thái |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| UC-{module}-{slug} | F-01 | [Tên] | As a {actor}, I want {goal}, so that {value} | [Tác nhân] | [Trigger] | [ĐK] | [HK] | [P0/P1/P2] | [draft] |
+| Mã UC | Feature Ref (FRD) | US Ref | Tên UC | Story Statement | Tác nhân chính | Trigger | Điều kiện tiên quyết | Hậu điều kiện | Ưu tiên | Trạng thái |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| UC-{module}-{slug} | F-01 | US-{module}-001 | [Tên] | As a {actor}, I want {goal}, so that {value} | [Tác nhân] | [Trigger] | [ĐK] | [HK] | [P0/P1/P2] | [draft] |
 
 > Main/Alternate/Error Flow, Diagram, và Cross-Function Impact chi tiết của từng UC: xem file gốc `usecases/uc-{slug}.md` (không copy toàn bộ flow vào bảng compiled này để tránh file quá dài — link trực tiếp tới file UC).
 
