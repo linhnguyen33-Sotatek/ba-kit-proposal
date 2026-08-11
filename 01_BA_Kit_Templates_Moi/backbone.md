@@ -83,33 +83,15 @@ Backbone step hiện tại tự động populate CR-* codes từ backbone scope 
 **Flow mới:**
 -->
 
-1. **Draft CR-* list:** Backbone phân tích scope từ intake và backbone vừa write → đề xuất danh sách CR-* draft gồm:
-   - CR-VAL-* cho validation rules áp dụng ≥ 2 screens/UCs (email, password, required field chung).
-   - CR-DIS-* cho display rules áp dụng ≥ 2 screens (pagination threshold, empty state, loading state).
-   - CR-BEH-* cho behaviour rules áp dụng ≥ 2 screens (button disabled, form reset).
+1. **Nhận diện CR-* eligible:** Scan scope từ intake và backbone vừa write, identify các rules xuất hiện ở ≥ 2 screens/UCs:
+   - CR-VAL-* cho validation rules (email, password, required field chung).
+   - CR-DIS-* cho display rules (pagination threshold, empty state, loading state).
+   - CR-BEH-* cho behaviour rules (button disabled, form reset).
+   Rules chỉ apply 1 screen/UC → bỏ qua, để UC tự định nghĩa trong Main/Error Flow.
 
-2. **Hiển thị draft cho BA review:**
-   ```
-   [backbone] Danh sách Common Rules đề xuất ({N} rules):
+2. **Append vào `paths.common_rules`:** Write trực tiếp các CR-* đủ điều kiện. Chi tiết thay đổi đã có trong Change Manifest — không cần BA confirm thêm ở bước này.
 
-   | Code | Type | Rule Statement | Applies To (≥2 screens/UCs) | Phân loại |
-   |---|---|---|---|---|
-   | CR-VAL-01 | VAL | [statement] | [scope] | ✅ Shared rule |
-   | CR-DIS-01 | DIS | [statement] | [scope] | ⚠️ Xem lại — chỉ thấy 1 screen |
-   | CR-BEH-01 | BEH | [statement] | [scope] | ❌ Là AC — nên chuyển vào UC |
-
-   ⚠️ Rule đánh dấu ❌ là AC (chỉ apply 1 feature) — không nên đưa vào Common Rules.
-      Bỏ qua các rule này hay giữ lại?
-
-   Approve list? (Y / chỉnh sửa / bỏ rule cụ thể):
-   ```
-
-3. **BA confirm:**
-   - `Y` → write `paths.common_rules` với danh sách đã duyệt.
-   - Chỉ định bỏ rule cụ thể (vd "bỏ CR-BEH-01") → loại khỏi list, write phần còn lại.
-   - Chỉnh sửa free text → re-draft, show lại để confirm.
-
-4. **Sau khi write:** Tiếp tục write `paths.message_list` và `paths.shared_rule_message_index` như flow gốc.
+3. **Sau khi write:** Tiếp tục write `paths.message_list` và `paths.shared_rule_message_index` như flow gốc.
 
 **Nguyên tắc phân loại CR-* vs AC:**
 - **Common Rule (CR-*):** Áp dụng cho ≥ 2 screens hoặc UCs trong toàn dự án. Không phụ thuộc vào context của 1 feature cụ thể.
